@@ -29,13 +29,7 @@
           :error="errors.password"
         />
 
-        <Button
-          type="submit"
-          variant="primary"
-          size="lg"
-          class="w-full"
-          :loading="uiStore.loading"
-        >
+        <Button type="submit" variant="primary" size="lg" class="w-full" :loading="uiStore.loading">
           Login
         </Button>
       </form>
@@ -43,10 +37,7 @@
       <template #footer>
         <p class="text-sm text-center text-muted-foreground">
           Don't have an account?
-          <NuxtLink
-            to="/register"
-            class="text-primary hover:underline font-medium"
-          >
+          <NuxtLink to="/register" class="text-primary hover:underline font-medium">
             Register here
           </NuxtLink>
         </p>
@@ -57,38 +48,38 @@
 
 <script setup lang="ts">
 definePageMeta({
-  middleware: "guest",
+  middleware: 'guest',
   layout: false,
-});
+})
 
-const { login } = useAuth();
-const uiStore = useUIStore();
+const { login } = useAuth()
+const uiStore = useUIStore()
 
 const form = reactive({
-  email: "",
-  password: "",
-});
+  email: '',
+  password: '',
+})
 
 const errors = reactive({
-  email: "",
-  password: "",
-});
+  email: '',
+  password: '',
+})
 
 const handleLogin = async () => {
   // Reset errors
-  errors.email = "";
-  errors.password = "";
+  errors.email = ''
+  errors.password = ''
 
   // Validate
   if (!form.email) {
-    errors.email = "Email is required";
-    return;
+    errors.email = 'Email is required'
+    return
   }
   if (!form.password) {
-    errors.password = "Password is required";
-    return;
+    errors.password = 'Password is required'
+    return
   }
 
-  await login(form.email, form.password);
-};
+  await login(form.email, form.password)
+}
 </script>

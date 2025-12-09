@@ -15,13 +15,13 @@
 <script setup lang="ts">
 const props = withDefaults(
   defineProps<{
-    padding?: boolean;
+    padding?: boolean
   }>(),
   {
     padding: true,
   }
-);
+)
 
-const cardClasses = "card";
-const contentClasses = computed(() => (props.padding ? "p-6" : ""));
+const cardClasses = 'card'
+const contentClasses = computed(() => (props.padding ? 'p-6' : ''))
 </script>

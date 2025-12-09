@@ -2,9 +2,7 @@
   <div>
     <div class="mb-6">
       <h1 class="text-3xl font-bold">Dashboard</h1>
-      <p class="text-muted-foreground">
-        Welcome back, {{ authStore.user?.full_name }}!
-      </p>
+      <p class="text-muted-foreground">Welcome back, {{ authStore.user?.full_name }}!</p>
     </div>
 
     <!-- Statistics Cards -->
@@ -16,12 +14,7 @@
             <p class="text-2xl font-bold">{{ stats?.total_payments || 0 }}</p>
           </div>
           <div class="p-3 bg-primary/10 rounded-full">
-            <svg
-              class="w-6 h-6 text-primary"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -89,9 +82,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-muted-foreground">Total Amount</p>
-            <p class="text-2xl font-bold">
-              Rp {{ formatCurrency(stats?.total_amount || 0) }}
-            </p>
+            <p class="text-2xl font-bold">Rp {{ formatCurrency(stats?.total_amount || 0) }}</p>
           </div>
           <div class="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
             <svg
@@ -117,18 +108,13 @@
       <template #header>
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-bold">Recent Payments</h2>
-          <NuxtLink to="/payments" class="text-sm text-primary hover:underline">
-            View all
-          </NuxtLink>
+          <NuxtLink to="/payments" class="text-sm text-primary hover:underline">View all</NuxtLink>
         </div>
       </template>
 
       <Loading v-if="loading" :loading="loading" />
 
-      <div
-        v-else-if="recentPayments.length === 0"
-        class="text-center py-8 text-muted-foreground"
-      >
+      <div v-else-if="recentPayments.length === 0" class="text-center py-8 text-muted-foreground">
         No payments yet. Create your first payment!
       </div>
 
@@ -140,7 +126,7 @@
         >
           <div class="flex-1">
             <p class="font-medium">
-              {{ payment.description || "No description" }}
+              {{ payment.description || 'No description' }}
             </p>
             <p class="text-sm text-muted-foreground">
               {{ payment.category?.name }} • {{ payment.payment_method?.name }}
@@ -160,7 +146,7 @@
 
       <template #footer>
         <NuxtLink to="/payments/create">
-          <Button variant="primary" class="w-full"> Create New Payment </Button>
+          <Button variant="primary" class="w-full">Create New Payment</Button>
         </NuxtLink>
       </template>
     </Card>
@@ -168,56 +154,51 @@
 </template>
 
 <script setup lang="ts">
-import type { DashboardStats, Payment } from "~/types/payment";
-import dayjs from "dayjs";
+import type { DashboardStats, Payment } from '~/types/payment'
+import dayjs from 'dayjs'
 
 definePageMeta({
-  middleware: "auth",
-});
+  middleware: 'auth',
+})
 
-const authStore = useAuthStore();
-const { getDashboardStats, getRecentPayments } = usePayment();
+const authStore = useAuthStore()
+const { getDashboardStats, getRecentPayments } = usePayment()
 
-const stats = ref<DashboardStats | null>(null);
-const recentPayments = ref<Payment[]>([]);
-const loading = ref(true);
+const stats = ref<DashboardStats | null>(null)
+const recentPayments = ref<Payment[]>([])
+const loading = ref(true)
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("id-ID").format(amount);
-};
+  return new Intl.NumberFormat('id-ID').format(amount)
+}
 
 const formatDate = (date: string) => {
-  return dayjs(date).format("DD MMM YYYY, HH:mm");
-};
+  return dayjs(date).format('DD MMM YYYY, HH:mm')
+}
 
 const getStatusClass = (status: string) => {
   const classes = {
-    pending:
-      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-    completed:
-      "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    failed: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-    refunded: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  };
-  return classes[status as keyof typeof classes] || "";
-};
+    pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+    completed: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+    failed: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+    refunded: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  }
+  return classes[status as keyof typeof classes] || ''
+}
 
 onMounted(async () => {
-  loading.value = true;
+  loading.value = true
 
-  const [statsRes, paymentsRes] = await Promise.all([
-    getDashboardStats(),
-    getRecentPayments(),
-  ]);
+  const [statsRes, paymentsRes] = await Promise.all([getDashboardStats(), getRecentPayments()])
 
   if (statsRes.success && statsRes.data) {
-    stats.value = statsRes.data;
+    stats.value = statsRes.data
   }
 
   if (paymentsRes.success && paymentsRes.data) {
-    recentPayments.value = paymentsRes.data;
+    recentPayments.value = paymentsRes.data
   }
 
-  loading.value = false;
-});
+  loading.value = false
+})
 </script>

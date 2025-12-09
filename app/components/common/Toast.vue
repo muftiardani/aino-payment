@@ -58,18 +58,17 @@
 </template>
 
 <script setup lang="ts">
-const uiStore = useUIStore();
+const uiStore = useUIStore()
 
 const toastClasses = computed(() => {
   const types = {
-    success: "bg-green-50 text-green-800 dark:bg-green-900 dark:text-green-200",
-    error: "bg-red-50 text-red-800 dark:bg-red-900 dark:text-red-200",
-    warning:
-      "bg-yellow-50 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-    info: "bg-blue-50 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  };
-  return types[uiStore.toast.type];
-});
+    success: 'bg-green-50 text-green-800 dark:bg-green-900 dark:text-green-200',
+    error: 'bg-red-50 text-red-800 dark:bg-red-900 dark:text-red-200',
+    warning: 'bg-yellow-50 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+    info: 'bg-blue-50 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  }
+  return types[uiStore.toast.type]
+})
 </script>
 
 <style scoped>

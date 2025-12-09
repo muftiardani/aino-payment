@@ -12,9 +12,9 @@
 </template>
 
 <script setup lang="ts">
-const uiStore = useUIStore();
+const uiStore = useUIStore()
 
 onMounted(() => {
-  uiStore.loadDarkMode();
-});
+  uiStore.loadDarkMode()
+})
 </script>

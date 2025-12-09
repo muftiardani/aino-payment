@@ -50,13 +50,7 @@
           :error="errors.confirm_password"
         />
 
-        <Button
-          type="submit"
-          variant="primary"
-          size="lg"
-          class="w-full"
-          :loading="uiStore.loading"
-        >
+        <Button type="submit" variant="primary" size="lg" class="w-full" :loading="uiStore.loading">
           Register
         </Button>
       </form>
@@ -64,10 +58,7 @@
       <template #footer>
         <p class="text-sm text-center text-muted-foreground">
           Already have an account?
-          <NuxtLink
-            to="/login"
-            class="text-primary hover:underline font-medium"
-          >
+          <NuxtLink to="/login" class="text-primary hover:underline font-medium">
             Login here
           </NuxtLink>
         </p>
@@ -78,55 +69,55 @@
 
 <script setup lang="ts">
 definePageMeta({
-  middleware: "guest",
+  middleware: 'guest',
   layout: false,
-});
+})
 
-const { register } = useAuth();
-const uiStore = useUIStore();
+const { register } = useAuth()
+const uiStore = useUIStore()
 
 const form = reactive({
-  full_name: "",
-  email: "",
-  password: "",
-  confirm_password: "",
-});
+  full_name: '',
+  email: '',
+  password: '',
+  confirm_password: '',
+})
 
 const errors = reactive({
-  full_name: "",
-  email: "",
-  password: "",
-  confirm_password: "",
-});
+  full_name: '',
+  email: '',
+  password: '',
+  confirm_password: '',
+})
 
 const handleRegister = async () => {
   // Reset errors
-  Object.keys(errors).forEach((key) => {
-    errors[key as keyof typeof errors] = "";
-  });
+  Object.keys(errors).forEach(key => {
+    errors[key as keyof typeof errors] = ''
+  })
 
   // Validate
   if (!form.full_name) {
-    errors.full_name = "Full name is required";
-    return;
+    errors.full_name = 'Full name is required'
+    return
   }
   if (!form.email) {
-    errors.email = "Email is required";
-    return;
+    errors.email = 'Email is required'
+    return
   }
   if (!form.password) {
-    errors.password = "Password is required";
-    return;
+    errors.password = 'Password is required'
+    return
   }
   if (form.password.length < 6) {
-    errors.password = "Password must be at least 6 characters";
-    return;
+    errors.password = 'Password must be at least 6 characters'
+    return
   }
   if (form.password !== form.confirm_password) {
-    errors.confirm_password = "Passwords do not match";
-    return;
+    errors.confirm_password = 'Passwords do not match'
+    return
   }
 
-  await register(form.email, form.password, form.full_name);
-};
+  await register(form.email, form.password, form.full_name)
+}
 </script>

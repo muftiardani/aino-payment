@@ -1,13 +1,13 @@
 export default defineNuxtRouteMiddleware((to, from) => {
-  const authStore = useAuthStore();
+  const authStore = useAuthStore()
 
   // Load auth from storage
   if (process.client) {
-    authStore.loadFromStorage();
+    authStore.loadFromStorage()
   }
 
   // If already authenticated, redirect to home
   if (authStore.isAuthenticated) {
-    return navigateTo("/");
+    return navigateTo('/')
   }
-});
+})
