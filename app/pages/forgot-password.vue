@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-background px-4">
+  <NuxtLayout name="auth">
     <div class="w-full max-w-md space-y-8">
       <!-- Logo/Header -->
       <div class="text-center">
@@ -22,17 +22,26 @@
             placeholder="name@company.com"
             required
             :error="error"
+            class="animate-fade-up"
+            style="animation-delay: 100ms"
           >
             <template #prefix>
               <IconEmail class="w-5 h-5 text-muted-foreground" />
             </template>
           </Input>
 
-          <Button type="submit" variant="primary" size="lg" class="w-full" :loading="loading">
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            class="w-full animate-fade-up"
+            style="animation-delay: 200ms"
+            :loading="loading"
+          >
             Send Reset Link
           </Button>
 
-          <div class="text-center text-sm">
+          <div class="text-center text-sm animate-fade-up" style="animation-delay: 300ms">
             <NuxtLink
               to="/login"
               class="font-medium text-primary hover:text-primary/90 transition-colors"
@@ -43,7 +52,7 @@
         </form>
       </Card>
     </div>
-  </div>
+  </NuxtLayout>
 </template>
 
 <script setup lang="ts">

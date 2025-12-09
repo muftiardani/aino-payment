@@ -4,16 +4,30 @@
       {{ label }}
       <span v-if="required" class="text-destructive">*</span>
     </label>
-    <input
-      :id="id"
-      :type="type"
-      :value="modelValue"
-      :placeholder="placeholder"
-      :required="required"
-      :disabled="disabled"
-      :class="inputClasses"
-      @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
-    />
+    <div class="relative">
+      <div
+        v-if="$slots.prefix"
+        class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+      >
+        <slot name="prefix" />
+      </div>
+      <input
+        :id="id"
+        :type="type"
+        :value="modelValue"
+        :placeholder="placeholder"
+        :required="required"
+        :disabled="disabled"
+        :class="[inputClasses, { 'pl-10': $slots.prefix, 'pr-10': $slots.suffix }]"
+        @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+      />
+      <div
+        v-if="$slots.suffix"
+        class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+      >
+        <slot name="suffix" />
+      </div>
+    </div>
     <p v-if="error" class="text-sm text-destructive">{{ error }}</p>
     <p v-else-if="hint" class="text-sm text-muted-foreground">{{ hint }}</p>
   </div>
