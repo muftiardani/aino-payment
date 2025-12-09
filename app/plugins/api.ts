@@ -4,27 +4,34 @@ export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
   const authStore = useAuthStore()
 
-  const api = async <T = any>(
+  const api = async <T = unknown>(
     endpoint: string,
-    options: RequestInit & { params?: Record<string, any> } = {}
+    options: RequestInit & { params?: Record<string, string | number | boolean> } = {}
   ): Promise<ApiResponse<T>> => {
     const { params, ...fetchOptions } = options
 
     // Build URL with query params
     let url = `${config.public.apiBase}${endpoint}`
     if (params) {
-      const query = new URLSearchParams(params).toString()
+      const stringParams = Object.entries(params).reduce(
+        (acc, [key, value]) => {
+          acc[key] = String(value)
+          return acc
+        },
+        {} as Record<string, string>
+      )
+      const query = new URLSearchParams(stringParams).toString()
       url += `?${query}`
     }
 
     // Add auth token if available
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...fetchOptions.headers,
+      ...((fetchOptions.headers as Record<string, string>) || {}),
     }
 
     if (authStore.token) {
-      headers['Authorization'] = `Bearer ${authStore.token}`
+      headers.Authorization = `Bearer ${authStore.token}`
     }
 
     try {

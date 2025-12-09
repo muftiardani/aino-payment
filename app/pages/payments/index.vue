@@ -77,10 +77,7 @@
           v-if="filters.search"
           variant="info"
           class="cursor-pointer"
-          @click="
-            filters.search = ''
-            loadPayments()
-          "
+          @click="removeSearchFilter"
         >
           Search: "{{ filters.search }}"
           <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,10 +93,7 @@
           v-if="filters.status"
           variant="info"
           class="cursor-pointer"
-          @click="
-            filters.status = ''
-            loadPayments()
-          "
+          @click="removeStatusFilter"
         >
           Status: {{ filters.status }}
           <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -314,6 +308,16 @@ const clearFilters = () => {
   filters.search = ''
   filters.status = ''
   page.value = 1
+  loadPayments()
+}
+
+const removeSearchFilter = () => {
+  filters.search = ''
+  loadPayments()
+}
+
+const removeStatusFilter = () => {
+  filters.status = ''
   loadPayments()
 }
 

@@ -62,9 +62,15 @@ func main() {
 	paymentRepo := repositories.NewPaymentRepository(database.DB)
 	categoryRepo := repositories.NewCategoryRepository(database.DB)
 	paymentMethodRepo := repositories.NewPaymentMethodRepository(database.DB)
+	refreshTokenRepo := repositories.NewRefreshTokenRepository(database.DB)
+	passwordResetRepo := repositories.NewPasswordResetRepository(database.DB)
+
+	// Start cleanup of expired refresh tokens
+	refreshTokenRepo.CleanupExpiredTokens()
 
 	// Initialize services
-	authService := services.NewAuthService(userRepo, cfg)
+	emailService := services.NewEmailService()
+	authService := services.NewAuthService(userRepo, refreshTokenRepo, passwordResetRepo, emailService, cfg)
 	paymentService := services.NewPaymentService(paymentRepo)
 
 	// Initialize handlers
@@ -77,9 +83,14 @@ func main() {
 	// Setup router
 	router := gin.Default()
 
+	// Initialize rate limiter (10 requests per second, burst of 20)
+	rateLimiter := middleware.NewIPRateLimiter(10, 20)
+	rateLimiter.CleanupOldIPs() // Start cleanup goroutine
+
 	// Global middleware
 	router.Use(middleware.CORSMiddleware(cfg.CORS.AllowedOrigins))
 	router.Use(middleware.LoggerMiddleware())
+	router.Use(middleware.RateLimitMiddleware(rateLimiter))
 
 	// Health check
 	router.GET("/health", func(c *gin.Context) {
@@ -98,6 +109,9 @@ func main() {
 		{
 			auth.POST("/register", authHandler.Register)
 			auth.POST("/login", authHandler.Login)
+			auth.POST("/refresh", authHandler.Refresh)
+			auth.POST("/forgot-password", authHandler.ForgotPassword)
+			auth.POST("/reset-password", authHandler.ResetPassword)
 			auth.GET("/me", middleware.AuthMiddleware(cfg), authHandler.GetMe)
 		}
 

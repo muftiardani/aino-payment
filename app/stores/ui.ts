@@ -19,14 +19,14 @@ export const useUIStore = defineStore('ui', {
 
     toggleDarkMode() {
       this.darkMode = !this.darkMode
-      if (process.client) {
+      if (import.meta.client) {
         localStorage.setItem('darkMode', String(this.darkMode))
         document.documentElement.classList.toggle('dark', this.darkMode)
       }
     },
 
     loadDarkMode() {
-      if (process.client) {
+      if (import.meta.client) {
         const saved = localStorage.getItem('darkMode')
         this.darkMode = saved === 'true'
         document.documentElement.classList.toggle('dark', this.darkMode)

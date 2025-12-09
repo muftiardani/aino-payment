@@ -39,6 +39,8 @@ func Migrate() error {
 		&models.Category{},
 		&models.PaymentMethod{},
 		&models.Payment{},
+		&models.RefreshToken{},
+		&models.PasswordResetToken{},
 	)
 
 	if err != nil {

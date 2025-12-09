@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"ainopay-server/internal/middleware"
 	"ainopay-server/internal/services"
 	"ainopay-server/internal/utils"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -16,6 +18,25 @@ type PaymentHandler struct {
 
 func NewPaymentHandler(paymentService *services.PaymentService) *PaymentHandler {
 	return &PaymentHandler{paymentService: paymentService}
+}
+
+// CreatePaymentRequest represents the request body for creating a payment
+type CreatePaymentRequest struct {
+	Amount          float64 `json:"amount" validate:"required,gt=0"`
+	CategoryID      string  `json:"category_id" validate:"required,uuid4"`
+	PaymentMethodID string  `json:"payment_method_id" validate:"required,uuid4"`
+	Description     string  `json:"description" validate:"max=500"`
+	TransactionDate string  `json:"transaction_date" validate:"required"`
+}
+
+// UpdatePaymentRequest represents the request body for updating a payment
+type UpdatePaymentRequest struct {
+	Amount          float64 `json:"amount" validate:"required,gt=0"`
+	Status          string  `json:"status" validate:"required,oneof=pending completed failed refunded"`
+	CategoryID      string  `json:"category_id" validate:"required,uuid4"`
+	PaymentMethodID string  `json:"payment_method_id" validate:"required,uuid4"`
+	Description     string  `json:"description" validate:"max=500"`
+	TransactionDate string  `json:"transaction_date" validate:"required"`
 }
 
 // Create godoc
@@ -31,13 +52,52 @@ func (h *PaymentHandler) Create(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 	id := userID.(uuid.UUID)
 
-	var req services.CreatePaymentRequest
+	var req CreatePaymentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request format")
 		return
 	}
 
-	payment, err := h.paymentService.Create(id, &req)
+	// Validate request
+	if validationErrors := middleware.ValidateStruct(&req); len(validationErrors) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error":   "Validation failed",
+			"details": validationErrors,
+		})
+		return
+	}
+
+	// Parse transaction date
+	transactionDate, err := time.Parse(time.RFC3339, req.TransactionDate)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid transaction date format")
+		return
+	}
+
+	// Parse UUIDs
+	categoryID, err := uuid.Parse(req.CategoryID)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid category ID")
+		return
+	}
+
+	paymentMethodID, err := uuid.Parse(req.PaymentMethodID)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid payment method ID")
+		return
+	}
+
+	// Convert to service request
+	serviceReq := &services.CreatePaymentRequest{
+		Amount:          req.Amount,
+		CategoryID:      categoryID,
+		PaymentMethodID: paymentMethodID,
+		Description:     req.Description,
+		TransactionDate: transactionDate,
+	}
+
+	payment, err := h.paymentService.Create(id, serviceReq)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -116,13 +176,53 @@ func (h *PaymentHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var req services.UpdatePaymentRequest
+	var req UpdatePaymentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
+		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request format")
 		return
 	}
 
-	payment, err := h.paymentService.Update(id, &req)
+	// Validate request
+	if validationErrors := middleware.ValidateStruct(&req); len(validationErrors) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error":   "Validation failed",
+			"details": validationErrors,
+		})
+		return
+	}
+
+	// Parse transaction date
+	transactionDate, err := time.Parse(time.RFC3339, req.TransactionDate)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid transaction date format")
+		return
+	}
+
+	// Parse UUIDs
+	categoryID, err := uuid.Parse(req.CategoryID)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid category ID")
+		return
+	}
+
+	paymentMethodID, err := uuid.Parse(req.PaymentMethodID)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid payment method ID")
+		return
+	}
+
+	// Convert to service request
+	serviceReq := &services.UpdatePaymentRequest{
+		Amount:          req.Amount,
+		Status:          req.Status,
+		CategoryID:      categoryID,
+		PaymentMethodID: paymentMethodID,
+		Description:     req.Description,
+		TransactionDate: transactionDate,
+	}
+
+	payment, err := h.paymentService.Update(id, serviceReq)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

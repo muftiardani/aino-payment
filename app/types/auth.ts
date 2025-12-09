@@ -20,5 +20,16 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
   token: string
+  refresh_token: string
+  expires_in: number // seconds
   user: User
+}
+
+export interface ForgotPasswordRequest {
+  email: string
+}
+
+export interface ResetPasswordRequest {
+  token: string
+  new_password: string
 }

@@ -8,12 +8,14 @@ import type {
   DashboardStats,
 } from '~/types/payment'
 
+import { useCache } from './useCache'
+
 export const usePayment = () => {
   const { $api } = useNuxtApp()
   const uiStore = useUIStore()
 
   const getPayments = async (page = 1, limit = 10, status = '', search = '') => {
-    const params: Record<string, any> = { page, limit }
+    const params: Record<string, string | number> = { page, limit }
     if (status) params.status = status
     if (search) params.search = search
 
@@ -84,11 +86,37 @@ export const usePayment = () => {
   }
 
   const getCategories = async () => {
-    return await $api<Category[]>('/categories')
+    const cache = useCache<Category[]>('categories', 600000) // 10 minutes
+
+    const cached = cache.get()
+    if (cached) {
+      return { success: true, data: cached }
+    }
+
+    const response = await $api<Category[]>('/categories')
+
+    if (response.success && response.data) {
+      cache.set(response.data)
+    }
+
+    return response
   }
 
   const getPaymentMethods = async () => {
-    return await $api<PaymentMethod[]>('/payment-methods')
+    const cache = useCache<PaymentMethod[]>('payment_methods', 600000) // 10 minutes
+
+    const cached = cache.get()
+    if (cached) {
+      return { success: true, data: cached }
+    }
+
+    const response = await $api<PaymentMethod[]>('/payment-methods')
+
+    if (response.success && response.data) {
+      cache.set(response.data)
+    }
+
+    return response
   }
 
   const getDashboardStats = async () => {

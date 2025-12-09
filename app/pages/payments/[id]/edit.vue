@@ -135,13 +135,13 @@ const errors = reactive({
 })
 
 const handleSubmit = async () => {
-  if (!form.amount || parseFloat(form.amount) <= 0) {
+  if (!form.amount || Number.parseFloat(form.amount.toString()) <= 0) {
     errors.amount = 'Amount must be greater than 0'
     return
   }
 
   const response = await updatePayment(id, {
-    amount: parseFloat(form.amount),
+    amount: Number.parseFloat(form.amount.toString()),
     status: form.status as 'pending' | 'completed' | 'failed' | 'refunded',
     category_id: form.category_id,
     payment_method_id: form.payment_method_id,

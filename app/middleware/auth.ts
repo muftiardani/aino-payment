@@ -1,8 +1,8 @@
-export default defineNuxtRouteMiddleware((to, from) => {
+export default defineNuxtRouteMiddleware((_to, _from) => {
   const authStore = useAuthStore()
 
   // Load auth from storage if not already loaded
-  if (!authStore.isAuthenticated && process.client) {
+  if (!authStore.isAuthenticated && import.meta.client) {
     authStore.loadFromStorage()
   }
 

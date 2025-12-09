@@ -38,3 +38,7 @@ func (r *UserRepository) Update(user *models.User) error {
 func (r *UserRepository) Delete(id uuid.UUID) error {
 	return r.db.Delete(&models.User{}, "id = ?", id).Error
 }
+
+func (r *UserRepository) UpdatePassword(userID uuid.UUID, passwordHash string) error {
+	return r.db.Model(&models.User{}).Where("id = ?", userID).Update("password_hash", passwordHash).Error
+}
