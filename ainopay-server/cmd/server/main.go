@@ -123,6 +123,7 @@ func main() {
 			payments := protected.Group("/payments")
 			{
 				payments.POST("", paymentHandler.Create)
+				payments.GET("/export", paymentHandler.Export)
 				payments.GET("", paymentHandler.GetAll)
 				payments.GET("/:id", paymentHandler.GetByID)
 				payments.PUT("/:id", paymentHandler.Update)
@@ -146,6 +147,7 @@ func main() {
 			{
 				dashboard.GET("/stats", dashboardHandler.GetStats)
 				dashboard.GET("/recent", dashboardHandler.GetRecent)
+				dashboard.GET("/chart", dashboardHandler.GetChartData)
 			}
 		}
 	}

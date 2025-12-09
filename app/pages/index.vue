@@ -1,19 +1,29 @@
 <template>
   <div>
-    <div class="mb-6">
-      <h1 class="text-3xl font-bold">Dashboard</h1>
-      <p class="text-muted-foreground">Welcome back, {{ authStore.user?.full_name }}!</p>
+    <div class="mb-6 animate-fade-in">
+      <h1
+        class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400"
+      >
+        Dashboard
+      </h1>
+      <p class="text-muted-foreground mt-1">Welcome back, {{ authStore.user?.full_name }}!</p>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <Card>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-up">
+      <Card class="group hover:-translate-y-1 transition-transform duration-300">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-muted-foreground">Total Payments</p>
-            <p class="text-2xl font-bold">{{ stats?.total_payments || 0 }}</p>
+            <p class="text-sm font-medium text-muted-foreground">Total Payments</p>
+            <p
+              class="text-3xl font-bold mt-1 bg-clip-text text-transparent bg-gradient-to-r from-primary to-violet-500"
+            >
+              {{ stats?.total_payments || 0 }}
+            </p>
           </div>
-          <div class="p-3 bg-primary/10 rounded-full">
+          <div
+            class="p-4 bg-primary/10 rounded-2xl group-hover:scale-110 transition-transform duration-300"
+          >
             <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
@@ -26,17 +36,21 @@
         </div>
       </Card>
 
-      <Card>
+      <Card class="group hover:-translate-y-1 transition-transform duration-300">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-muted-foreground">Completed</p>
-            <p class="text-2xl font-bold text-green-600">
+            <p class="text-sm font-medium text-muted-foreground">Completed</p>
+            <p
+              class="text-3xl font-bold mt-1 bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 to-teal-500"
+            >
               {{ stats?.completed_count || 0 }}
             </p>
           </div>
-          <div class="p-3 bg-green-100 dark:bg-green-900 rounded-full">
+          <div
+            class="p-4 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl group-hover:scale-110 transition-transform duration-300"
+          >
             <svg
-              class="w-6 h-6 text-green-600"
+              class="w-6 h-6 text-emerald-600 dark:text-emerald-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -52,17 +66,21 @@
         </div>
       </Card>
 
-      <Card>
+      <Card class="group hover:-translate-y-1 transition-transform duration-300">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-muted-foreground">Pending</p>
-            <p class="text-2xl font-bold text-yellow-600">
+            <p class="text-sm font-medium text-muted-foreground">Pending</p>
+            <p
+              class="text-3xl font-bold mt-1 bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-orange-500"
+            >
               {{ stats?.pending_count || 0 }}
             </p>
           </div>
-          <div class="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-full">
+          <div
+            class="p-4 bg-amber-100 dark:bg-amber-900/30 rounded-2xl group-hover:scale-110 transition-transform duration-300"
+          >
             <svg
-              class="w-6 h-6 text-yellow-600"
+              class="w-6 h-6 text-amber-600 dark:text-amber-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -78,15 +96,21 @@
         </div>
       </Card>
 
-      <Card>
+      <Card class="group hover:-translate-y-1 transition-transform duration-300">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-muted-foreground">Total Amount</p>
-            <p class="text-2xl font-bold">Rp {{ formatCurrency(stats?.total_amount || 0) }}</p>
+            <p class="text-sm font-medium text-muted-foreground">Total Amount</p>
+            <p
+              class="text-3xl font-bold mt-1 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-500"
+            >
+              Rp {{ formatCurrency(stats?.total_amount || 0) }}
+            </p>
           </div>
-          <div class="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+          <div
+            class="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-2xl group-hover:scale-110 transition-transform duration-300"
+          >
             <svg
-              class="w-6 h-6 text-blue-600"
+              class="w-6 h-6 text-blue-600 dark:text-blue-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -103,59 +127,69 @@
       </Card>
     </div>
 
+    <!-- Earnings Chart -->
+    <div class="mb-8 animate-fade-up" style="animation-delay: 0.1s">
+      <EarningsChart />
+    </div>
+
     <!-- Recent Payments -->
-    <Card>
-      <template #header>
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-bold">Recent Payments</h2>
-          <NuxtLink to="/payments" class="text-sm text-primary hover:underline">View all</NuxtLink>
-        </div>
-      </template>
-
-      <Loading v-if="loading" :loading="loading" />
-
-      <div v-else-if="recentPayments.length === 0" class="text-center py-8 text-muted-foreground">
-        No payments yet. Create your first payment!
-      </div>
-
-      <div v-else class="space-y-4">
-        <div
-          v-for="payment in recentPayments"
-          :key="payment.id"
-          class="flex items-center justify-between p-4 rounded-lg border hover:bg-accent transition-colors"
-        >
-          <div class="flex-1">
-            <p class="font-medium">
-              {{ payment.description || 'No description' }}
-            </p>
-            <p class="text-sm text-muted-foreground">
-              {{ payment.category?.name }} • {{ payment.payment_method?.name }}
-            </p>
-            <p class="text-xs text-muted-foreground">
-              {{ formatDate(payment.transaction_date) }}
-            </p>
+    <div class="animate-fade-up" style="animation-delay: 0.2s">
+      <Card>
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold">Recent Payments</h2>
+            <NuxtLink to="/payments" class="text-sm text-primary hover:underline">
+              View all
+            </NuxtLink>
           </div>
-          <div class="text-right">
-            <p class="font-bold">Rp {{ formatCurrency(payment.amount) }}</p>
-            <span :class="getStatusClass(payment.status)" class="badge">
-              {{ payment.status }}
-            </span>
+        </template>
+
+        <Loading v-if="loading" :loading="loading" />
+
+        <div v-else-if="recentPayments.length === 0" class="text-center py-8 text-muted-foreground">
+          No payments yet. Create your first payment!
+        </div>
+
+        <div v-else class="space-y-4">
+          <div
+            v-for="payment in recentPayments"
+            :key="payment.id"
+            class="flex items-center justify-between p-4 rounded-lg border hover:bg-accent transition-colors"
+          >
+            <div class="flex-1">
+              <p class="font-medium">
+                {{ payment.description || 'No description' }}
+              </p>
+              <p class="text-sm text-muted-foreground">
+                {{ payment.category?.name }} • {{ payment.payment_method?.name }}
+              </p>
+              <p class="text-xs text-muted-foreground">
+                {{ formatDate(payment.transaction_date) }}
+              </p>
+            </div>
+            <div class="text-right">
+              <p class="font-bold">Rp {{ formatCurrency(payment.amount) }}</p>
+              <span :class="getStatusClass(payment.status)" class="badge">
+                {{ payment.status }}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <template #footer>
-        <NuxtLink to="/payments/create">
-          <Button variant="primary" class="w-full">Create New Payment</Button>
-        </NuxtLink>
-      </template>
-    </Card>
+        <template #footer>
+          <NuxtLink to="/payments/create">
+            <Button variant="primary" class="w-full">Create New Payment</Button>
+          </NuxtLink>
+        </template>
+      </Card>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { DashboardStats, Payment } from '~/types/payment'
 import dayjs from 'dayjs'
+import EarningsChart from '~/components/dashboard/EarningsChart.vue'
 
 definePageMeta({
   middleware: 'auth',

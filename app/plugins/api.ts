@@ -6,9 +6,12 @@ export default defineNuxtPlugin(() => {
 
   const api = async <T = unknown>(
     endpoint: string,
-    options: RequestInit & { params?: Record<string, string | number | boolean> } = {}
+    options: RequestInit & {
+      params?: Record<string, string | number | boolean>
+      responseType?: 'json' | 'blob'
+    } = {}
   ): Promise<ApiResponse<T>> => {
-    const { params, ...fetchOptions } = options
+    const { params, responseType = 'json', ...fetchOptions } = options
 
     // Build URL with query params
     let url = `${config.public.apiBase}${endpoint}`
@@ -26,8 +29,11 @@ export default defineNuxtPlugin(() => {
 
     // Add auth token if available
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
       ...((fetchOptions.headers as Record<string, string>) || {}),
+    }
+
+    if (responseType === 'json') {
+      headers['Content-Type'] = 'application/json'
     }
 
     if (authStore.token) {
@@ -39,6 +45,13 @@ export default defineNuxtPlugin(() => {
         ...fetchOptions,
         headers,
       })
+
+      if (responseType === 'blob') {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        return (await response.blob()) as unknown as ApiResponse<T>
+      }
 
       const data = await response.json()
 

@@ -60,3 +60,9 @@ export interface DashboardStats {
   pending_count: number
   total_amount: number
 }
+
+export interface MonthlyStats {
+  month: string
+  total_amount: number
+  count: number
+}

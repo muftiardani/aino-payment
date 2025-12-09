@@ -2,6 +2,8 @@ package repositories
 
 import (
 	"ainopay-server/internal/models"
+	//"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -26,30 +28,63 @@ func (r *PaymentRepository) FindByID(id uuid.UUID) (*models.Payment, error) {
 	return &payment, err
 }
 
-func (r *PaymentRepository) FindAll(userID uuid.UUID, limit, offset int, status, search string) ([]models.Payment, int64, error) {
+// PaymentFilter options
+type PaymentFilter struct {
+	Limit     int
+	Offset    int
+	Status    string
+	Search    string
+	MinAmount *float64
+	MaxAmount *float64
+	StartDate *time.Time
+	EndDate   *time.Time
+}
+
+func (r *PaymentRepository) FindAll(userID uuid.UUID, filter PaymentFilter) ([]models.Payment, int64, error) {
 	var payments []models.Payment
 	var total int64
 
 	query := r.db.Model(&models.Payment{}).Where("user_id = ?", userID)
 
 	// Filter by status
-	if status != "" {
-		query = query.Where("status = ?", status)
+	if filter.Status != "" {
+		query = query.Where("status = ?", filter.Status)
 	}
 
 	// Search in description
-	if search != "" {
-		query = query.Where("description ILIKE ?", "%"+search+"%")
+	if filter.Search != "" {
+		query = query.Where("description ILIKE ?", "%"+filter.Search+"%")
+	}
+
+	// Amount range
+	if filter.MinAmount != nil {
+		query = query.Where("amount >= ?", *filter.MinAmount)
+	}
+	if filter.MaxAmount != nil {
+		query = query.Where("amount <= ?", *filter.MaxAmount)
+	}
+
+	// Date range
+	if filter.StartDate != nil {
+		query = query.Where("transaction_date >= ?", *filter.StartDate)
+	}
+	if filter.EndDate != nil {
+		// Ensure end date includes the whole day
+		query = query.Where("transaction_date <= ?", *filter.EndDate)
 	}
 
 	// Get total count
 	query.Count(&total)
 
 	// Get paginated results with preloaded relations
-	err := query.Preload("User").Preload("PaymentMethod").Preload("Category").
-		Order("transaction_date DESC").
-		Limit(limit).Offset(offset).
-		Find(&payments).Error
+	query = query.Preload("User").Preload("PaymentMethod").Preload("Category").
+		Order("transaction_date DESC")
+
+	if filter.Limit > 0 {
+		query = query.Limit(filter.Limit).Offset(filter.Offset)
+	}
+
+	err := query.Find(&payments).Error
 
 	return payments, total, err
 }
@@ -81,4 +116,19 @@ func (r *PaymentRepository) GetStatistics(userID uuid.UUID) (map[string]interfac
 		"pending_count":     pendingCount,
 		"total_amount":      totalAmount,
 	}, nil
+}
+
+// GetMonthlyEarnings returns earnings grouped by month for a specific year
+func (r *PaymentRepository) GetMonthlyEarnings(userID uuid.UUID, year int) ([]models.MonthlyStats, error) {
+	var stats []models.MonthlyStats
+
+	// Postgres specific query
+	err := r.db.Model(&models.Payment{}).
+		Select("TO_CHAR(transaction_date, 'Mon') as month, SUM(amount) as total_amount, COUNT(*) as count").
+		Where("user_id = ? AND status = ? AND EXTRACT(YEAR FROM transaction_date) = ?", userID, "completed", year).
+		Group("TO_CHAR(transaction_date, 'Mon'), EXTRACT(MONTH FROM transaction_date)").
+		Order("EXTRACT(MONTH FROM transaction_date)").
+		Scan(&stats).Error
+
+	return stats, err
 }

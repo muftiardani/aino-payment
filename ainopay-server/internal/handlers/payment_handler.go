@@ -115,6 +115,10 @@ func (h *PaymentHandler) Create(c *gin.Context) {
 // @Param limit query int false "Items per page" default(10)
 // @Param status query string false "Filter by status"
 // @Param search query string false "Search in description"
+// @Param min_amount query number false "Minimum amount"
+// @Param max_amount query number false "Maximum amount"
+// @Param start_date query string false "Start date (YYYY-MM-DD)"
+// @Param end_date query string false "End date (YYYY-MM-DD)"
 // @Success 200 {object} utils.Response
 // @Router /payments [get]
 func (h *PaymentHandler) GetAll(c *gin.Context) {
@@ -126,13 +130,98 @@ func (h *PaymentHandler) GetAll(c *gin.Context) {
 	status := c.Query("status")
 	search := c.Query("search")
 
-	result, err := h.paymentService.GetAll(id, page, limit, status, search)
+	// Parse advanced filters
+	var minAmount, maxAmount *float64
+	if val := c.Query("min_amount"); val != "" {
+		if v, err := strconv.ParseFloat(val, 64); err == nil {
+			minAmount = &v
+		}
+	}
+	if val := c.Query("max_amount"); val != "" {
+		if v, err := strconv.ParseFloat(val, 64); err == nil {
+			maxAmount = &v
+		}
+	}
+
+	var startDate, endDate *time.Time
+	if val := c.Query("start_date"); val != "" {
+		if t, err := time.Parse("2006-01-02", val); err == nil {
+			startDate = &t
+		}
+	}
+	if val := c.Query("end_date"); val != "" {
+		if t, err := time.Parse("2006-01-02", val); err == nil {
+			// Set to end of day
+			t = t.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
+			endDate = &t
+		}
+	}
+
+	result, err := h.paymentService.GetAll(id, page, limit, status, search, minAmount, maxAmount, startDate, endDate)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	utils.SuccessResponse(c, http.StatusOK, "Payments retrieved successfully", result)
+}
+
+// Export godoc
+// @Summary Export payments to CSV
+// @Tags payments
+// @Produce text/csv
+// @Security BearerAuth
+// @Param status query string false "Filter by status"
+// @Param search query string false "Search in description"
+// @Param min_amount query number false "Minimum amount"
+// @Param max_amount query number false "Maximum amount"
+// @Param start_date query string false "Start date (YYYY-MM-DD)"
+// @Param end_date query string false "End date (YYYY-MM-DD)"
+// @Success 200 {file} file "payments.csv"
+// @Router /payments/export [get]
+func (h *PaymentHandler) Export(c *gin.Context) {
+	userID, _ := c.Get("user_id")
+	id := userID.(uuid.UUID)
+
+	status := c.Query("status")
+	search := c.Query("search")
+
+	// Parse advanced filters
+	var minAmount, maxAmount *float64
+	if val := c.Query("min_amount"); val != "" {
+		if v, err := strconv.ParseFloat(val, 64); err == nil {
+			minAmount = &v
+		}
+	}
+	if val := c.Query("max_amount"); val != "" {
+		if v, err := strconv.ParseFloat(val, 64); err == nil {
+			maxAmount = &v
+		}
+	}
+
+	var startDate, endDate *time.Time
+	if val := c.Query("start_date"); val != "" {
+		if t, err := time.Parse("2006-01-02", val); err == nil {
+			startDate = &t
+		}
+	}
+	if val := c.Query("end_date"); val != "" {
+		if t, err := time.Parse("2006-01-02", val); err == nil {
+			// Set to end of day
+			t = t.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
+			endDate = &t
+		}
+	}
+
+	csvData, err := h.paymentService.Export(id, status, search, minAmount, maxAmount, startDate, endDate)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.Header("Content-Type", "text/csv")
+	c.Header("Content-Disposition", "attachment; filename=payments.csv")
+	c.Data(http.StatusOK, "text/csv", csvData)
 }
 
 // GetByID godoc

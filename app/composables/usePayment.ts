@@ -6,18 +6,34 @@ import type {
   UpdatePaymentRequest,
   PaymentListResponse,
   DashboardStats,
+  MonthlyStats,
 } from '~/types/payment'
 
+import type { ApiResponse } from '~/types/api'
 import { useCache } from './useCache'
 
 export const usePayment = () => {
   const { $api } = useNuxtApp()
   const uiStore = useUIStore()
 
-  const getPayments = async (page = 1, limit = 10, status = '', search = '') => {
+  const getPayments = async (
+    page = 1,
+    limit = 10,
+    status = '',
+    search = '',
+    minAmount?: number,
+    maxAmount?: number,
+    startDate?: string,
+    endDate?: string
+  ) => {
+    // Build query params
     const params: Record<string, string | number> = { page, limit }
     if (status) params.status = status
     if (search) params.search = search
+    if (minAmount !== undefined) params.min_amount = minAmount
+    if (maxAmount !== undefined) params.max_amount = maxAmount
+    if (startDate) params.start_date = startDate
+    if (endDate) params.end_date = endDate
 
     return await $api<PaymentListResponse>('/payments', { params })
   }
@@ -26,7 +42,7 @@ export const usePayment = () => {
     return await $api<Payment>(`/payments/${id}`)
   }
 
-  const createPayment = async (data: CreatePaymentRequest) => {
+  const createPayment = async (data: CreatePaymentRequest): Promise<ApiResponse<Payment>> => {
     uiStore.setLoading(true)
     try {
       const response = await $api<Payment>('/payments', {
@@ -123,6 +139,44 @@ export const usePayment = () => {
     return await $api<DashboardStats>('/dashboard/stats')
   }
 
+  const getMonthlyStats = async (year?: number) => {
+    const params: Record<string, string | number> = {}
+    if (year) params.year = year
+    return await $api<MonthlyStats[]>('/dashboard/chart', { params })
+  }
+
+  const exportPayments = async (
+    status = '',
+    search = '',
+    minAmount?: number,
+    maxAmount?: number,
+    startDate?: string,
+    endDate?: string
+  ) => {
+    const params: Record<string, string | number | boolean> = {}
+    if (status) params.status = status
+    if (search) params.search = search
+    if (minAmount !== undefined) params.min_amount = minAmount
+    if (maxAmount !== undefined) params.max_amount = maxAmount
+    if (startDate) params.start_date = startDate
+    if (endDate) params.end_date = endDate
+
+    const response = await $api<Blob>('/payments/export', {
+      params,
+      responseType: 'blob',
+    })
+
+    // Create download link
+    const blob = response as unknown as Blob
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `payments-${new Date().toISOString().split('T')[0]}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   const getRecentPayments = async () => {
     return await $api<Payment[]>('/dashboard/recent')
   }
@@ -136,6 +190,8 @@ export const usePayment = () => {
     getCategories,
     getPaymentMethods,
     getDashboardStats,
+    getMonthlyStats,
+    exportPayments,
     getRecentPayments,
   }
 }

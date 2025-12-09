@@ -3,6 +3,9 @@ package services
 import (
 	"ainopay-server/internal/models"
 	"ainopay-server/internal/repositories"
+	"bytes"
+	"encoding/csv"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -63,10 +66,21 @@ func (s *PaymentService) GetByID(id uuid.UUID) (*models.Payment, error) {
 	return s.paymentRepo.FindByID(id)
 }
 
-func (s *PaymentService) GetAll(userID uuid.UUID, page, limit int, status, search string) (*PaymentListResponse, error) {
+func (s *PaymentService) GetAll(userID uuid.UUID, page, limit int, status, search string, minAmount, maxAmount *float64, startDate, endDate *time.Time) (*PaymentListResponse, error) {
 	offset := (page - 1) * limit
 
-	payments, total, err := s.paymentRepo.FindAll(userID, limit, offset, status, search)
+	filter := repositories.PaymentFilter{
+		Limit:     limit,
+		Offset:    offset,
+		Status:    status,
+		Search:    search,
+		MinAmount: minAmount,
+		MaxAmount: maxAmount,
+		StartDate: startDate,
+		EndDate:   endDate,
+	}
+
+	payments, total, err := s.paymentRepo.FindAll(userID, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -105,4 +119,58 @@ func (s *PaymentService) Delete(id uuid.UUID) error {
 
 func (s *PaymentService) GetStatistics(userID uuid.UUID) (map[string]interface{}, error) {
 	return s.paymentRepo.GetStatistics(userID)
+}
+
+func (s *PaymentService) GetMonthlyStats(userID uuid.UUID, year int) ([]models.MonthlyStats, error) {
+	return s.paymentRepo.GetMonthlyEarnings(userID, year)
+}
+
+func (s *PaymentService) Export(userID uuid.UUID, status, search string, minAmount, maxAmount *float64, startDate, endDate *time.Time) ([]byte, error) {
+	// Limit 0 means fetch all
+	filter := repositories.PaymentFilter{
+		Limit:     0,
+		Status:    status,
+		Search:    search,
+		MinAmount: minAmount,
+		MaxAmount: maxAmount,
+		StartDate: startDate,
+		EndDate:   endDate,
+	}
+
+	payments, _, err := s.paymentRepo.FindAll(userID, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	// Generate CSV
+	b := &bytes.Buffer{}
+	w := csv.NewWriter(b)
+
+	// Write header
+	header := []string{"Transaction Date", "Description", "Amount", "Category", "Payment Method", "Status"}
+	if err := w.Write(header); err != nil {
+		return nil, err
+	}
+
+	// Write rows
+	for _, p := range payments {
+		row := []string{
+			p.TransactionDate.Format("2006-01-02 15:04"),
+			p.Description,
+			fmt.Sprintf("%.2f", p.Amount),
+			p.Category.Name,
+			p.PaymentMethod.Name,
+			p.Status,
+		}
+		if err := w.Write(row); err != nil {
+			return nil, err
+		}
+	}
+
+	w.Flush()
+	if err := w.Error(); err != nil {
+		return nil, err
+	}
+
+	return b.Bytes(), nil
 }

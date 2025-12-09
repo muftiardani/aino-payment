@@ -1,5 +1,5 @@
 <template>
-  <nav class="bg-card border-b border-border sticky top-0 z-40">
+  <nav class="glass sticky top-0 z-40">
     <div class="px-4 sm:px-6 lg:px-8">
       <div class="flex h-16 items-center justify-between">
         <!-- Left side -->

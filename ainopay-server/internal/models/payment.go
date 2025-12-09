@@ -29,3 +29,9 @@ func (p *Payment) BeforeCreate(tx *gorm.DB) error {
 	}
 	return nil
 }
+
+type MonthlyStats struct {
+	Month       string  `json:"month"`
+	TotalAmount float64 `json:"total_amount"`
+	Count       int64   `json:"count"`
+}
