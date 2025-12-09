@@ -1,75 +1,70 @@
-# Nuxt Minimal Starter
+# AinoPay Frontend
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Frontend aplikasi manajemen pembayaran menggunakan Nuxt.js 4, Vue 3, TypeScript, dan TailwindCSS.
 
-## Setup
+## 🚀 Tech Stack
 
-Make sure to install dependencies:
+- **Nuxt.js** 4.2.1 - Meta-framework Vue.js
+- **Vue** 3.5.25 - Progressive JavaScript framework
+- **TypeScript** - Type-safe development
+- **TailwindCSS** - Utility-first CSS framework
+- **Pinia** - State management
+- **VueUse** - Composition utilities
+- **Day.js** - Date formatting
+
+## 📁 Project Structure
+
+```
+app/
+├── assets/css/main.css           # Global styles + Tailwind
+├── components/                   # Vue components
+│   ├── common/                   # Reusable UI components
+│   └── layout/                   # Layout components
+├── composables/                  # Composition functions
+├── layouts/                      # Page layouts
+├── middleware/                   # Route middleware
+├── pages/                        # File-based routing
+├── plugins/                      # Nuxt plugins
+├── stores/                       # Pinia stores
+└── types/                        # TypeScript types
+```
+
+## 🔧 Setup
 
 ```bash
-# npm
+# Install dependencies
 npm install
 
-# pnpm
-pnpm install
+# Configure environment (.env)
+NUXT_PUBLIC_API_BASE=http://localhost:8080/api
 
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
+# Run development server
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+Frontend akan berjalan di `http://localhost:3000`
 
-Build the application for production:
+## 🎯 Features
+
+- ✅ Authentication (Login/Register)
+- ✅ Dashboard with statistics
+- ✅ Payments list with pagination
+- ✅ Categories view
+- ✅ Dark mode support
+- ✅ Responsive design
+- ✅ Toast notifications
+
+## 🔌 Integration with Backend
+
+Pastikan backend server running:
 
 ```bash
-# npm
-npm run build
+# Terminal 1: Backend
+cd ainopay-server
+go run cmd/server/main.go
 
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+# Terminal 2: Frontend
+npm run dev
 ```
 
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+Lihat dokumentasi lengkap di [ainopay-server/README.md](ainopay-server/README.md)
