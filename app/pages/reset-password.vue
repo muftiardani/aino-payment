@@ -21,7 +21,7 @@
             label="New Password"
             placeholder="••••••••"
             required
-            :error="errors.password"
+            :error="errors.new_password"
             class="animate-fade-up"
             style="animation-delay: 100ms"
           >
@@ -37,7 +37,7 @@
             label="Confirm Password"
             placeholder="••••••••"
             required
-            :error="errors.confirmPassword"
+            :error="errors.confirm_password"
             class="animate-fade-up"
             style="animation-delay: 200ms"
           >
@@ -73,6 +73,7 @@
 
 <script setup lang="ts">
 import IconLock from '~/components/icons/IconLock.vue'
+import { resetPasswordSchema } from '~/utils/validation-schemas'
 
 definePageMeta({
   layout: false,
@@ -82,16 +83,12 @@ definePageMeta({
 const route = useRoute()
 const authStore = useAuthStore()
 const uiStore = useUIStore()
+const { errors, validate } = useFormValidation(resetPasswordSchema)
 
 const password = ref('')
 const confirmPassword = ref('')
 const loading = ref(false)
 const token = route.query.token as string
-
-const errors = reactive({
-  password: '',
-  confirmPassword: '',
-})
 
 onMounted(() => {
   if (!token) {
@@ -101,23 +98,10 @@ onMounted(() => {
 })
 
 const handleSubmit = async () => {
-  // Validate
-  let hasError = false
-  if (password.value.length < 6) {
-    errors.password = 'Password must be at least 6 characters'
-    hasError = true
-  } else {
-    errors.password = ''
+  // Validate form
+  if (!validate({ token, new_password: password.value, confirm_password: confirmPassword.value })) {
+    return
   }
-
-  if (password.value !== confirmPassword.value) {
-    errors.confirmPassword = 'Passwords do not match'
-    hasError = true
-  } else {
-    errors.confirmPassword = ''
-  }
-
-  if (hasError) return
 
   loading.value = true
 

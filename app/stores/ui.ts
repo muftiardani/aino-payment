@@ -39,9 +39,13 @@ export const useUIStore = defineStore('ui', {
 
     showToast(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') {
       this.toast = { show: true, message, type }
+
+      // Longer duration for errors (5s) vs other types (3s)
+      const duration = type === 'error' ? 5000 : 3000
+
       setTimeout(() => {
         this.toast.show = false
-      }, 3000)
+      }, duration)
     },
   },
 })

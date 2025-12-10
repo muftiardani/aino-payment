@@ -19,7 +19,8 @@
         :required="required"
         :disabled="disabled"
         :class="[inputClasses, { 'pl-10': $slots.prefix, 'pr-10': $slots.suffix }]"
-        @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+        @input="handleInput"
+        @blur="handleBlur"
       />
       <div
         v-if="$slots.suffix"
@@ -53,9 +54,19 @@ const props = withDefaults(
   }
 )
 
-defineEmits<{
+const emit = defineEmits<{
   'update:modelValue': [value: string]
+  blur: [event: FocusEvent]
 }>()
+
+const handleInput = (event: Event) => {
+  const value = (event.target as HTMLInputElement).value
+  emit('update:modelValue', value)
+}
+
+const handleBlur = (event: FocusEvent) => {
+  emit('blur', event)
+}
 
 const inputClasses = computed(() => {
   const base = 'input'

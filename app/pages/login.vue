@@ -104,6 +104,7 @@ import IconEmail from '~/components/icons/IconEmail.vue'
 import IconLock from '~/components/icons/IconLock.vue'
 import IconGoogle from '~/components/icons/IconGoogle.vue'
 import IconGithub from '~/components/icons/IconGithub.vue'
+import { loginSchema } from '~/utils/validation-schemas'
 
 definePageMeta({
   middleware: 'guest',
@@ -112,29 +113,16 @@ definePageMeta({
 
 const { login } = useAuth()
 const uiStore = useUIStore()
+const { errors, validate } = useFormValidation(loginSchema)
 
 const form = reactive({
   email: '',
   password: '',
 })
 
-const errors = reactive({
-  email: '',
-  password: '',
-})
-
 const handleLogin = async () => {
-  // Reset errors
-  errors.email = ''
-  errors.password = ''
-
-  // Validate
-  if (!form.email) {
-    errors.email = 'Email is required'
-    return
-  }
-  if (!form.password) {
-    errors.password = 'Password is required'
+  // Validate form
+  if (!validate(form)) {
     return
   }
 

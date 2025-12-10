@@ -3,6 +3,7 @@ import type { AuthResponse } from '~/types/auth'
 export const useTokenRefresh = () => {
   const authStore = useAuthStore()
   const { $api } = useNuxtApp()
+  const logger = useLogger('TokenRefresh')
 
   let refreshTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -23,7 +24,7 @@ export const useTokenRefresh = () => {
       await refreshToken()
     }, refreshTime)
 
-    console.log(`Token refresh scheduled in ${refreshTime / 1000} seconds`)
+    logger.info(`Token refresh scheduled in ${refreshTime / 1000} seconds`)
   }
 
   /**
@@ -33,7 +34,7 @@ export const useTokenRefresh = () => {
     const refreshTokenValue = authStore.refreshToken
 
     if (!refreshTokenValue) {
-      console.warn('No refresh token available')
+      logger.warn('No refresh token available')
       authStore.logout()
       return
     }
@@ -51,13 +52,13 @@ export const useTokenRefresh = () => {
         // Schedule next refresh
         scheduleRefresh(response.data.expires_in)
 
-        console.log('Token refreshed successfully')
+        logger.info('Token refreshed successfully')
       } else {
-        console.error('Token refresh failed:', response.error)
+        logger.error('Token refresh failed:', response.error)
         authStore.logout()
       }
     } catch (error) {
-      console.error('Token refresh error:', error)
+      logger.error('Token refresh error:', error)
       authStore.logout()
     }
   }
@@ -69,7 +70,7 @@ export const useTokenRefresh = () => {
     const expiresAt = authStore.tokenExpiresAt
 
     if (!expiresAt) {
-      console.warn('No token expiry time available')
+      logger.warn('No token expiry time available')
       return
     }
 

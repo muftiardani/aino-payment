@@ -106,6 +106,7 @@
 import IconUser from '~/components/icons/IconUser.vue'
 import IconEmail from '~/components/icons/IconEmail.vue'
 import IconLock from '~/components/icons/IconLock.vue'
+import { registerSchema } from '~/utils/validation-schemas'
 
 definePageMeta({
   middleware: 'guest',
@@ -114,6 +115,7 @@ definePageMeta({
 
 const { register } = useAuth()
 const uiStore = useUIStore()
+const { errors, validate } = useFormValidation(registerSchema)
 
 const form = reactive({
   full_name: '',
@@ -122,38 +124,9 @@ const form = reactive({
   confirm_password: '',
 })
 
-const errors = reactive({
-  full_name: '',
-  email: '',
-  password: '',
-  confirm_password: '',
-})
-
 const handleRegister = async () => {
-  // Reset errors
-  Object.keys(errors).forEach(key => {
-    errors[key as keyof typeof errors] = ''
-  })
-
-  // Validate
-  if (!form.full_name) {
-    errors.full_name = 'Full name is required'
-    return
-  }
-  if (!form.email) {
-    errors.email = 'Email is required'
-    return
-  }
-  if (!form.password) {
-    errors.password = 'Password is required'
-    return
-  }
-  if (form.password.length < 6) {
-    errors.password = 'Password must be at least 6 characters'
-    return
-  }
-  if (form.password !== form.confirm_password) {
-    errors.confirm_password = 'Passwords do not match'
+  // Validate form
+  if (!validate(form)) {
     return
   }
 

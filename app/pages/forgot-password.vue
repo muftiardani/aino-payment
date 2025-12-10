@@ -21,7 +21,7 @@
             label="Email Address"
             placeholder="name@company.com"
             required
-            :error="error"
+            :error="errors.email"
             class="animate-fade-up"
             style="animation-delay: 100ms"
           >
@@ -57,6 +57,7 @@
 
 <script setup lang="ts">
 import IconEmail from '~/components/icons/IconEmail.vue'
+import { forgotPasswordSchema } from '~/utils/validation-schemas'
 
 definePageMeta({
   layout: false,
@@ -65,30 +66,31 @@ definePageMeta({
 
 const authStore = useAuthStore()
 const uiStore = useUIStore()
+const { errors, validate } = useFormValidation(forgotPasswordSchema)
 
 const email = ref('')
 const loading = ref(false)
-const error = ref('')
 
 const handleSubmit = async () => {
-  if (!email.value) return
+  // Validate form
+  if (!validate({ email: email.value })) {
+    return
+  }
 
   loading.value = true
-  error.value = ''
 
   try {
     const response = await authStore.forgotPassword({ email: email.value })
 
     if (response.success) {
       uiStore.showToast('Reset link sent! Please check your email.', 'success')
-      // Optional: navigate to login or show success message
       email.value = ''
     } else {
-      error.value = response.error || 'Failed to send reset link'
+      uiStore.showToast(response.error || 'Failed to send reset link', 'error')
     }
   } catch (err) {
     console.error(err)
-    error.value = 'An unexpected error occurred'
+    uiStore.showToast('An unexpected error occurred', 'error')
   } finally {
     loading.value = false
   }

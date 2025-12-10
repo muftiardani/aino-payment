@@ -99,6 +99,7 @@
 <script setup lang="ts">
 import type { Category, PaymentMethod } from '~/types/payment'
 import dayjs from 'dayjs'
+import { createPaymentSchema } from '~/utils/validation-schemas'
 
 definePageMeta({
   middleware: 'auth',
@@ -106,6 +107,7 @@ definePageMeta({
 
 const { createPayment, getCategories, getPaymentMethods } = usePayment()
 const uiStore = useUIStore()
+const { errors, validate } = useFormValidation(createPaymentSchema)
 
 const categories = ref<Category[]>([])
 const paymentMethods = ref<PaymentMethod[]>([])
@@ -118,35 +120,9 @@ const form = reactive({
   description: '',
 })
 
-const errors = reactive({
-  amount: '',
-  category_id: '',
-  payment_method_id: '',
-  transaction_date: '',
-  description: '',
-})
-
 const handleSubmit = async () => {
-  // Reset errors
-  Object.keys(errors).forEach(key => {
-    errors[key as keyof typeof errors] = ''
-  })
-
-  // Validate
-  if (!form.amount || Number.parseFloat(form.amount.toString()) <= 0) {
-    errors.amount = 'Amount must be greater than 0'
-    return
-  }
-  if (!form.category_id) {
-    errors.category_id = 'Please select a category'
-    return
-  }
-  if (!form.payment_method_id) {
-    errors.payment_method_id = 'Please select a payment method'
-    return
-  }
-  if (!form.transaction_date) {
-    errors.transaction_date = 'Transaction date is required'
+  // Validate form
+  if (!validate(form)) {
     return
   }
 

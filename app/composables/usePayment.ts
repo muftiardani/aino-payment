@@ -145,36 +145,35 @@ export const usePayment = () => {
     return await $api<MonthlyStats[]>('/dashboard/chart', { params })
   }
 
-  const exportPayments = async (
-    status = '',
-    search = '',
-    minAmount?: number,
-    maxAmount?: number,
-    startDate?: string,
-    endDate?: string
-  ) => {
-    const params: Record<string, string | number | boolean> = {}
-    if (status) params.status = status
-    if (search) params.search = search
-    if (minAmount !== undefined) params.min_amount = minAmount
-    if (maxAmount !== undefined) params.max_amount = maxAmount
-    if (startDate) params.start_date = startDate
-    if (endDate) params.end_date = endDate
+  const exportPayments = async (format: 'csv' | 'pdf' = 'csv') => {
+    try {
+      uiStore.setLoading(true)
 
-    const response = await $api<Blob>('/payments/export', {
-      params,
-      responseType: 'blob',
-    })
+      const blob = await $api<Blob>('/payments/export', {
+        method: 'GET',
+        params: { format },
+        headers: {
+          Accept: 'application/octet-stream',
+        },
+      })
 
-    // Create download link
-    const blob = response as unknown as Blob
-    const url = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', `payments-${new Date().toISOString().split('T')[0]}.csv`)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+      // Create download link
+      const url = window.URL.createObjectURL(blob.data as Blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `payments-${new Date().toISOString().split('T')[0]}.${format}`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+
+      uiStore.showToast('Payments exported successfully', 'success')
+    } catch (error) {
+      uiStore.showToast('Failed to export payments', 'error')
+      console.error('Export payments error:', error)
+    } finally {
+      uiStore.setLoading(false)
+    }
   }
 
   const getRecentPayments = async () => {
